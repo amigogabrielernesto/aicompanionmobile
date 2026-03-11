@@ -4,10 +4,13 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useUser } from "../../context/UserContext";
 
 export default function HomeScreen() {
   const { user, profile, logout } = useUser();
+  const router = useRouter();
   const displayName = profile?.fullname || user?.email || "Usuario";
   const displayAvatar = (profile?.fullname || user?.email || "?").charAt(0).toUpperCase();
 
@@ -35,7 +38,31 @@ export default function HomeScreen() {
       <View style={styles.content}>
         <Text style={styles.title}>Bienvenido 👋</Text>
 
-        <TouchableOpacity style={styles.button} onPress={handleLogout}>
+        <TouchableOpacity 
+          style={[styles.button, styles.checkinButton]} 
+          onPress={() => router.push("/checkin")}
+        >
+          <Ionicons name="checkbox-outline" size={20} color="white" style={{ marginRight: 8 }} />
+          <Text style={styles.buttonText}>Daily Check-in</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.button, styles.chatButton]} 
+          onPress={() => router.push("/chat")}
+        >
+          <Ionicons name="chatbubble-outline" size={20} color="white" style={{ marginRight: 8 }} />
+          <Text style={styles.buttonText}>AI Chat</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.button, styles.historyButton]} 
+          onPress={() => router.push("/history")}
+        >
+          <Ionicons name="time-outline" size={20} color="white" style={{ marginRight: 8 }} />
+          <Text style={styles.buttonText}>History</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={[styles.button, styles.logoutButton]} onPress={handleLogout}>
           <Text style={styles.buttonText}>Cerrar sesión</Text>
         </TouchableOpacity>
       </View>
@@ -93,10 +120,26 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   button: {
-    backgroundColor: "#ef4444",
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "80%",
+    marginBottom: 15,
+  },
+  checkinButton: {
+    backgroundColor: "#10b981",
+  },
+  chatButton: {
+    backgroundColor: "#6366f1",
+  },
+  historyButton: {
+    backgroundColor: "#4b5563",
+  },
+  logoutButton: {
+    backgroundColor: "#ef4444",
   },
   buttonText: {
     color: "white",

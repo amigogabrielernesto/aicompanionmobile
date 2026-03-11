@@ -9,6 +9,7 @@ interface Profile {
 
 interface UserContextType {
     user: any;
+    token: string | null;
     profile: Profile | null;
     loading: boolean;
     logout: () => Promise<void>;
@@ -19,6 +20,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<any>(null);
+    const [token, setToken] = useState<string | null>(null);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -42,8 +44,10 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
     useEffect(() => {
         const initialize = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
+            const { data: { session } } = await supabase.auth.getSession();
+            const user = session?.user ?? null;
             setUser(user);
+            setToken(session?.access_token ?? null);
 
             if (user) {
                 await fetchProfile(user.id);
@@ -58,6 +62,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
             async (_, session) => {
                 const currentUser = session?.user ?? null;
                 setUser(currentUser);
+                setToken(session?.access_token ?? null);
 
                 if (currentUser) {
                     await fetchProfile(currentUser.id);
@@ -80,7 +85,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
     return (
         <UserContext.Provider
-            value={{ user, profile, loading, logout, refreshProfile }}
+            value={{ user, token, profile, loading, logout, refreshProfile }}
         >
             {children}
         </UserContext.Provider>
