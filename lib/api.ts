@@ -1,4 +1,4 @@
-const API_URL = process.env.EXPO_PUBLIC_API_URL;
+const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://aicompanionbackend.up.railway.app";
 
 export async function sendMessage(message: string, token: string) {
     const res = await fetch(

@@ -11,6 +11,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { supabase } from "../../lib/supabase";
+import { getHistory } from "../../lib/api";
 
 interface HistoryItem {
   id: string;
@@ -39,20 +40,16 @@ export default function HistoryScreen() {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
 
-      const baseUrl = process.env.EXPO_PUBLIC_API_URL || "https://aicompanionbackend.up.railway.app";
-      const limit = 10;
-      const fetchUrl = `${baseUrl}/history?page=${pageNum}&limit=${limit}`;
-      
-      const response = await fetch(fetchUrl, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : '',
-        },
-      });
+      if (!token) {
+        console.error("No token found");
+        setLoading(false);
+        setLoadingMore(false);
+        return;
+      }
 
-      const data = await response.json();
+      const limit = 20;
+      const data = await getHistory(token, pageNum, limit);
 
-      // Based on previous logs, the structure is { messages: [], pagination: { ... } }
       if (data && data.messages && Array.isArray(data.messages)) {
         if (pageNum === 1) {
           setHistory(data.messages);

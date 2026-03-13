@@ -79,14 +79,19 @@ export default function ChatScreen() {
                     time: Date.now()
                 }
             ]);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error sending initial message:", error);
+            
+            let errorMsg = "Error: No se pudo conectar con el servidor.";
+            if (error.message) {
+                errorMsg = `Error: ${error.message}`;
+            }
 
             setChat(prev => [
                 ...prev,
                 {
                     role: "assistant",
-                    content: "Error: No se pudo conectar con el servidor.",
+                    content: errorMsg,
                     time: Date.now()
                 }
             ]);
@@ -121,14 +126,19 @@ export default function ChatScreen() {
                     time: Date.now()
                 }
             ]);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error sending message:", error);
+
+            let errorMsg = "Error: No se pudo conectar con el servidor.";
+            if (error.message) {
+                errorMsg = `Error: ${error.message}`;
+            }
 
             setChat(prev => [
                 ...prev,
                 {
                     role: "assistant",
-                    content: "Error: No se pudo conectar con el servidor.",
+                    content: errorMsg,
                     time: Date.now()
                 }
             ]);
