@@ -13,12 +13,18 @@ import { useRouter } from "expo-router";
 import { supabase } from "../../lib/supabase";
 import { getHistory } from "../../lib/api";
 
-interface HistoryItem {
+interface ChatMessage {
   id: string;
-  user_id: string;
-  role: string;
+  turn_id: number;
+  role: 'user' | 'assistant';
   content: string;
   created_at: string;
+}
+
+interface HistoryItem {
+  id: string;
+  created_at: string;
+  messages: ChatMessage[];
 }
 
 export default function HistoryScreen() {
@@ -50,11 +56,14 @@ export default function HistoryScreen() {
       const limit = 20;
       const data = await getHistory(token, pageNum, limit);
 
-      if (data && data.messages && Array.isArray(data.messages)) {
+      // Handle both { checkins: [...] } and direct array [...] responses
+      const checkins = Array.isArray(data) ? data : (data?.checkins || data?.messages || []);
+
+      if (Array.isArray(checkins)) {
         if (pageNum === 1) {
-          setHistory(data.messages);
+          setHistory(checkins);
         } else {
-          setHistory((prev) => [...prev, ...data.messages]);
+          setHistory((prev) => [...prev, ...checkins]);
         }
         
         // Determine if there are more pages
@@ -62,7 +71,7 @@ export default function HistoryScreen() {
           setHasMore(data.pagination.page < data.pagination.totalPages);
         } else {
           // Fallback if pagination object is missing
-          setHasMore(data.messages.length === limit);
+          setHasMore(checkins.length === limit);
         }
       }
     } catch (error) {
@@ -86,19 +95,30 @@ export default function HistoryScreen() {
   };
 
   const renderItem = ({ item }: { item: HistoryItem }) => (
-    <View style={[
-      styles.historyCard, 
-      item.role === 'assistant' ? styles.assistantCard : styles.userCard
-    ]}>
-      <View style={styles.cardHeader}>
-        <Text style={styles.roleText}>
-          {item.role === 'assistant' ? '🤖 AI' : '👤 Tú'}
-        </Text>
-        <Text style={styles.cardDate}>
-          {new Date(item.created_at).toLocaleString()}
+    <View style={styles.checkinContainer}>
+      <View style={styles.checkinHeader}>
+        <Ionicons name="calendar-outline" size={16} color="#a5b4fc" />
+        <Text style={styles.checkinDate}>
+          Sesión: {new Date(item.created_at).toLocaleString()}
         </Text>
       </View>
-      <Text style={styles.contentBody}>{item.content}</Text>
+      
+      {item.messages && item.messages.map((msg) => (
+        <View key={msg.id} style={[
+          styles.historyCard, 
+          msg.role === 'assistant' ? styles.assistantCard : styles.userCard
+        ]}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.roleText}>
+              {msg.role === 'assistant' ? '🤖 AI' : '👤 Tú'}
+            </Text>
+            <Text style={styles.cardDate}>
+              {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </Text>
+          </View>
+          <Text style={styles.contentBody}>{msg.content}</Text>
+        </View>
+      ))}
     </View>
   );
 
@@ -167,11 +187,34 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 20,
+    paddingBottom: 40,
+  },
+  checkinContainer: {
+    marginBottom: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: "#222",
+    paddingBottom: 16,
+  },
+  checkinHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+    backgroundColor: "#1a1a1a",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+  checkinDate: {
+    color: "#a5b4fc",
+    fontSize: 12,
+    fontWeight: "bold",
+    marginLeft: 6,
   },
   historyCard: {
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    padding: 12,
+    marginBottom: 8,
     borderWidth: 1,
   },
   userCard: {

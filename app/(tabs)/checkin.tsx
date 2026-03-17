@@ -19,8 +19,8 @@ import { useUser } from "../../context/UserContext";
 
 export default function CheckInScreen() {
     const [mood, setMood] = useState<string | null>(null);
-    const [energy, setEnergy] = useState(5);
-    const [stress, setStress] = useState(5);
+    const [energy, setEnergy] = useState(3);
+    const [stress, setStress] = useState(3);
     const [note, setNote] = useState("");
     const [loading, setLoading] = useState(false);
     const { token } = useUser();
@@ -32,6 +32,7 @@ export default function CheckInScreen() {
         "😐 Neutral",
         "😔 Triste",
         "😡 Estresado",
+        "😰 Ansioso",
     ];
 
     async function handleSubmit() {
@@ -72,13 +73,13 @@ export default function CheckInScreen() {
         <View style={styles.sliderContainer}>
             <View style={styles.sliderHeader}>
                 <Text style={styles.sliderLabel}>{label}</Text>
-                <Text style={styles.sliderValue}>{value}/10</Text>
+                <Text style={styles.sliderValue}>{value}/5</Text>
             </View>
             <View style={styles.sliderBarBackground}>
-                <View style={[styles.sliderBarForeground, { width: `${value * 10}%` }]} />
+                <View style={[styles.sliderBarForeground, { width: `${(value / 5) * 100}%` }]} />
             </View>
             <View style={styles.sliderButtons}>
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                {[0, 1, 2, 3, 4, 5].map((num) => (
                     <TouchableOpacity
                         key={num}
                         onPress={() => onChange(num)}
